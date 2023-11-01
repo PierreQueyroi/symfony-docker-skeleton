@@ -1,0 +1,106 @@
+version: '3.5'
+
+name: ${COMPOSE_PROJECT_NAME:-project}
+
+services:
+
+  # PHP container
+  php-fpm:
+    container_name: ${COMPOSE_PROJECT_NAME:-project}-php-fpm
+    build:
+      context: docker/php
+      target: app_php_${APP_ENV:-prod}
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - APP_ENV=${APP_ENV:-prod}
+    volumes:
+      - ./:/var/www
+
+    extra_hosts:
+      # Ensure that host.docker.internal is correctly defined on Linux
+      - host.docker.internal:${IP_HOST:-127.0.0.1}
+    # TODO : only if dev
+    ports:
+      - '5173:5173'
+
+  # Webserver container
+  caddy:
+    container_name: ${COMPOSE_PROJECT_NAME:-project}-caddy
+    restart: unless-stopped
+    build:
+      context: docker/caddy
+    volumes:
+      - ./public/:/var/www/public:ro
+      - ./docker/ssl/self_signed.crt:/etc/caddy/self_signed.crt:ro
+      - ./docker/ssl/self_signed.key:/etc/caddy/self_signed.key:ro
+    depends_on:
+      - php-fpm
+    ports:
+      # HTTP
+      - target: 80
+        published: ${HTTP_PORT:-80}
+        protocol: tcp
+      # HTTPS
+      - target: 443
+        published: ${HTTPS_PORT:-443}
+        protocol: tcp
+      # HTTP/3
+      - target: 443
+        published: ${HTTP3_PORT:-443}
+        protocol: udp
+
+  # The Postgres DB Server
+  db:
+    container_name: ${COMPOSE_PROJECT_NAME:-project}-db
+    image: postgres:${DATABASE_VERSION}-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${DATABASE_PWD}
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USR}
+    volumes:
+      - db_volume:/var/lib/postgresql/data/
+    ports:
+      - 15432:${DATABASE_PORT}
+
+  # A PGAdmin container for Tooling
+  pgadmin:
+    container_name: ${COMPOSE_PROJECT_NAME:-project}-pgadmin
+    image: dpage/pgadmin4:7.7
+    depends_on:
+      - db
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_USER}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PWD}
+      PGADMIN_DISABLE_POSTFIX: "true"
+      PGADMIN_ENABLE_TLS: "true"
+      PGADMIN_CONFIG_SERVER_MODE: "True"
+    volumes:
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - ./docker/pgadmin/pgpass:/pgadmin4/pgpass:ro
+      - pg_admin:/var/lib/pgadmin
+      - ./docker/ssl/self_signed.crt:/certs/server.cert:ro
+      - ./docker/ssl/self_signed.key:/certs/server.key:ro
+    ports:
+      - target: 443
+        published: ${PGADMIN_PORT:-8443}
+        protocol: tcp
+    entrypoint: >
+      /bin/sh -c "
+      mkdir /var/lib/pgadmin/storage/;
+      mkdir -m 700 /var/lib/pgadmin/storage/pgadmin_example.test;
+      chown -R pgadmin:root /var/lib/pgadmin/storage/pgadmin_example.test;
+      cp /pgadmin4/pgpass /var/lib/pgadmin/storage/pgadmin_example.test/;
+      chmod 600 /var/lib/pgadmin/storage/pgadmin_example.test/pgpass;
+      chown pgadmin:root /var/lib/pgadmin/storage/pgadmin_example.test.tech/pgpass;
+      /entrypoint.sh
+      "
+
+volumes:
+  db_volume:
+    driver: local
+  pg_admin:
+    driver: local

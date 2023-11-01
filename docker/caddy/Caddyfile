@@ -1,0 +1,46 @@
+{
+	#admin off
+	#auto_https disable_redirects
+
+	# Debug
+	{$DEBUG}
+}
+
+:443 {
+	tls /etc/caddy/self_signed.crt /etc/caddy/self_signed.key
+	route {
+		root * /var/www/public
+		push
+		php_fastcgi php-fpm:9000
+
+		# Adding Headers Handling
+		header -server
+		header ?cache-control "max-age=30000042"
+
+		encode zstd gzip
+		file_server
+	}
+	tls internal {
+		on_demand
+	}
+	log {
+		output stdout
+	}
+}
+:80 {
+	route {
+		root * /var/www/public
+		push
+		php_fastcgi php-fpm:9000
+
+		# Adding Headers Handling
+		header -server
+		header ?cache-control "max-age=30000042"
+
+		encode zstd gzip
+		file_server
+	}
+	log {
+		output stdout
+	}
+}
