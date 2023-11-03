@@ -38,7 +38,7 @@ set -a
 set +a
 
 # ----- Adding PgAdmin local folders if needed -----
-if [ -z ${var+x} ]; then
+if [ -z ${PGADMIN_USER+x} ]; then
   # Ugly stuff for Wsl Host IP
   export IP_HOST=$(cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2)
 
