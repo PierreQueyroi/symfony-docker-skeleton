@@ -88,6 +88,7 @@ services:
       - target: 443
         published: ${PGADMIN_PORT:-8443}
         protocol: tcp
+    # TODO : replace pgadmin_example above if ${PGADMIN_USER} change... Can it be automatic ?
     entrypoint: >
       /bin/sh -c "
       mkdir /var/lib/pgadmin/storage/;

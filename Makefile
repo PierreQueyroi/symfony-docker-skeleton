@@ -2,6 +2,9 @@
 
 # Loading the env variables
 include .env
+ifneq ("$(wildcard .env.local)","")
+	include .env.local
+endif
 
 default: help
 
@@ -32,7 +35,10 @@ stop: ## Stop the project
 	@$(call GREEN, "Stopping the project...")
 	@sh docker/stop.sh
 
-.PHONY: composer-update
-composer-update: ## Update PHP dependencies
-	@$(call GREEN, "Updating PHP dependencies...")
-	$(IMAGE_PHP) composer update
+.PHONY: bash
+bash: ## Access the PHP container's bash
+	$(IMAGE_PHP) sh -l
+
+.PHONY: composer
+composer: ## Run composer commands [use `--` if multiple arguments]
+	$(IMAGE_PHP) composer $(filter-out $@,$(MAKECMDGOALS))
