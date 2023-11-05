@@ -1,11 +1,5 @@
 #!make
 
-# Loading the env variables
-include .env
-ifneq ("$(wildcard .env.local)","")
-	include .env.local
-endif
-
 default: help
 
 # ----- Colors -----
@@ -13,7 +7,7 @@ GREEN = /bin/echo -e "\x1b[32m\#$1\x1b[0m"
 RED = /bin/echo -e "\x1b[31m\#$1\x1b[0m"
 
 # ----- Programs -----
-IMAGE_PHP=docker exec -it $(COMPOSE_PROJECT_NAME)-php-fpm
+IMAGE_PHP=docker compose exec -it php-fpm
 
 ## ----- Help -----
 .PHONY: help
