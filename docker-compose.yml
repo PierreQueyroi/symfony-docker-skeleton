@@ -96,7 +96,7 @@ services:
       chown -R pgadmin:root /var/lib/pgadmin/storage/pgadmin_example.test;
       cp /pgadmin4/pgpass /var/lib/pgadmin/storage/pgadmin_example.test/;
       chmod 600 /var/lib/pgadmin/storage/pgadmin_example.test/pgpass;
-      chown pgadmin:root /var/lib/pgadmin/storage/pgadmin_example.test.tech/pgpass;
+      chown pgadmin:root /var/lib/pgadmin/storage/pgadmin_example.test/pgpass;
       /entrypoint.sh
       "
 
