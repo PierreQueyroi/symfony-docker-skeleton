@@ -17,13 +17,9 @@ services:
       - APP_ENV=${APP_ENV:-prod}
     volumes:
       - ./:/var/www
-
     extra_hosts:
       # Ensure that host.docker.internal is correctly defined on Linux
       - host.docker.internal:${IP_HOST:-127.0.0.1}
-    # TODO : only if dev
-    ports:
-      - '5173:5173'
 
   # Webserver container
   caddy:

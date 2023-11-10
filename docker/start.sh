@@ -21,13 +21,13 @@ fi
 
 # ----- Folders creation -----
 
-DIRS="./public ./var ./vendor"
+DIRS="./docker/pgadmin ./public ./var ./vendor"
 
 for DIR in $DIRS; do
   if [ ! -d "$DIR" ]; then
     # Take action if $DIR exists. #
     echo "${CYAN}Creating not existing $DIR${NC}"
-    mkdir $DIR
+    mkdir "$DIR"
   fi
 done
 
@@ -37,16 +37,16 @@ set -a
 . ./.env
 set +a
 
-# ----- Adding PgAdmin local folders if needed -----
-if [ -z ${PGADMIN_USER+x} ]; then
-  # Ugly stuff for Wsl Host IP
-  export IP_HOST=$(cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2)
+# ----- Adding PgAdmin conf -----
 
-  # PgAdmin extra config :
-  echo "$DATABASE_HOST:$DATABASE_PORT:$DATABASE_NAME:$DATABASE_USR:$DATABASE_PWD" > ./docker/pgadmin/pgpass
-  echo "$DATABASE_HOST:$DATABASE_PORT:postgres:$DATABASE_USR:$DATABASE_PWD" >> ./docker/pgadmin/pgpass
+# Ugly stuff for Wsl Host IP
+export IP_HOST=$(cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2)
 
-  PGADMIN_SERVER=$(cat <<EOF
+# PgAdmin extra config :
+echo "$DATABASE_HOST:$DATABASE_PORT:$DATABASE_NAME:$DATABASE_USR:$DATABASE_PWD" > ./docker/pgadmin/pgpass
+echo "$DATABASE_HOST:$DATABASE_PORT:postgres:$DATABASE_USR:$DATABASE_PWD" >> ./docker/pgadmin/pgpass
+
+PGADMIN_SERVER=$(cat <<EOF
 {
     "Servers": {
         "1": {
@@ -63,11 +63,12 @@ if [ -z ${PGADMIN_USER+x} ]; then
 }
 EOF
 )
-  echo $PGADMIN_SERVER > ./docker/pgadmin/servers.json
-fi
+echo $PGADMIN_SERVER > ./docker/pgadmin/servers.json
+
+# ----- Starting docker -----
 
 docker compose down
-docker compose up -d
+docker compose up -d --build
 
 # ----- Display links -----
 
@@ -91,7 +92,6 @@ echo "-----------------------------------------------------------"
 
 # ----- Extra : Check if webserver is running -----
 
-
 url="https://$SETUP_SITE_FRONT_URL/-admin/login"
 wait_time=3
 expected_status=200
@@ -111,4 +111,4 @@ while [ "$status" != "$expected_status" ]; do
     echo "Waiting for $wait_time seconds${NC}"
     sleep $wait_time
   fi
- done
+done
