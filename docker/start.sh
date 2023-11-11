@@ -47,8 +47,7 @@ export IP_HOST=$(cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2)
 # ----- Starting docker -----
 
 docker compose down
-docker compose up -d --build
-#docker compose up -d
+docker compose up -d
 
 # ----- Display links -----
 
