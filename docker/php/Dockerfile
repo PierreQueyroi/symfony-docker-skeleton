@@ -29,6 +29,10 @@ RUN apk add --no-cache \
 #		git \
 #		gnupg
 
+# ----- Installing PHP extensions -----
+
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
+
 # Using https://github.com/mlocati/docker-php-extension-installer
 RUN install-php-extensions \
         apcu \
