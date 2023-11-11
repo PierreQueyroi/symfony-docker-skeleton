@@ -39,36 +39,15 @@ set +a
 
 # ----- Adding PgAdmin conf -----
 
+chmod 0777 ./docker/pgadmin
+
 # Ugly stuff for Wsl Host IP
 export IP_HOST=$(cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2)
-
-# PgAdmin extra config :
-echo "$DATABASE_HOST:$DATABASE_PORT:$DATABASE_NAME:$DATABASE_USR:$DATABASE_PWD" > ./docker/pgadmin/pgpass
-echo "$DATABASE_HOST:$DATABASE_PORT:postgres:$DATABASE_USR:$DATABASE_PWD" >> ./docker/pgadmin/pgpass
-
-PGADMIN_SERVER=$(cat <<EOF
-{
-    "Servers": {
-        "1": {
-            "Name": "Docker-Compose Postgres SRV",
-            "Port": $DATABASE_PORT,
-            "Username": "$DATABASE_USR",
-            "Group": "Servers",
-            "Host": "$COMPOSE_PROJECT_NAME-db",
-            "SSLMode": "prefer",
-            "PassFile": "/pgpass",
-            "MaintenanceDB": "$DATABASE_NAME"
-        }
-    }
-}
-EOF
-)
-echo $PGADMIN_SERVER > ./docker/pgadmin/servers.json
 
 # ----- Starting docker -----
 
 docker compose down
-docker compose up -d --build
+docker compose up -d
 
 # ----- Display links -----
 

@@ -19,17 +19,17 @@ RUN adduser projectuser -u 1000 -HD --home /home/projectuser; \
 
 RUN apk add --no-cache \
 		acl \
+		git
+
+#RUN apk add --no-cache \
+#		acl \
 #		fcgi \
 #		file \
 #		gettext \
-		git \
-#		gnupg \
-	;
+#		git \
+#		gnupg
 
-# ----- Installing PHP extensions -----
-
-COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
-
+# Using https://github.com/mlocati/docker-php-extension-installer
 RUN install-php-extensions \
         apcu \
         gd \
@@ -53,15 +53,9 @@ RUN mkdir -p /var/run/php
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-USER root
-
-# ----- Adding healthcheck -----
-
-COPY ./docker-healthcheck.sh /usr/local/bin/docker-healthcheck
-RUN chmod +x /usr/local/bin/docker-healthcheck
-HEALTHCHECK --interval=10s --timeout=3s --retries=3 CMD ["docker-healthcheck"]
-
 # ----- Adding entrypoint -----
+
+USER root
 
 COPY ./docker-entrypoint.sh /usr/local/bin/docker-entrypoint
 RUN chmod +x /usr/local/bin/docker-entrypoint; \
@@ -89,9 +83,9 @@ RUN set -eux; \
 	apk add --update linux-headers; \
 	pecl install xdebug; \
 	docker-php-ext-enable xdebug; \
-	apk del .build-deps;\
-	mkdir /tmp/xdebug;\
-	touch /tmp/xdebug/xdebug.log;\
+	apk del .build-deps; \
+	mkdir /tmp/xdebug; \
+	touch /tmp/xdebug/xdebug.log; \
 	chmod 0777 /tmp/xdebug/xdebug.log;
 
 USER 1000

@@ -31,6 +31,7 @@ services:
       - ./public/:/var/www/public:ro
       - ./docker/ssl/self_signed.crt:/etc/caddy/self_signed.crt:ro
       - ./docker/ssl/self_signed.key:/etc/caddy/self_signed.key:ro
+      - caddy_data:/data
     depends_on:
       - php-fpm
     ports:
@@ -58,25 +59,24 @@ services:
       POSTGRES_USER: ${DATABASE_USR}
     volumes:
       - db_volume:/var/lib/postgresql/data/
-    ports:
-      - 15432:${DATABASE_PORT}
 
   # A PGAdmin container for Tooling
   pgadmin:
     container_name: ${COMPOSE_PROJECT_NAME:-project}-pgadmin
-    image: dpage/pgadmin4:7.7
+    build:
+      context: docker/pgadmin
     depends_on:
       - db
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_USER}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PWD}
-      PGADMIN_DISABLE_POSTFIX: "true"
-      PGADMIN_ENABLE_TLS: "true"
-      PGADMIN_CONFIG_SERVER_MODE: "True"
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USR: ${DATABASE_USR}
+      DATABASE_PWD: ${DATABASE_PWD}
+      PGADMIN_USER: ${PGADMIN_USER}
+      PGADMIN_PWD: ${PGADMIN_PWD}
     volumes:
-      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
-      - ./docker/pgadmin/pgpass:/pgadmin4/pgpass:ro
       - pg_admin:/var/lib/pgadmin
       - ./docker/ssl/self_signed.crt:/certs/server.cert:ro
       - ./docker/ssl/self_signed.key:/certs/server.key:ro
@@ -84,19 +84,10 @@ services:
       - target: 443
         published: ${PGADMIN_PORT:-8443}
         protocol: tcp
-    # TODO : replace pgadmin_example above if ${PGADMIN_USER} change... Can it be automatic ?
-    entrypoint: >
-      /bin/sh -c "
-      mkdir /var/lib/pgadmin/storage/;
-      mkdir -m 700 /var/lib/pgadmin/storage/pgadmin_example.test;
-      chown -R pgadmin:root /var/lib/pgadmin/storage/pgadmin_example.test;
-      cp /pgadmin4/pgpass /var/lib/pgadmin/storage/pgadmin_example.test/;
-      chmod 600 /var/lib/pgadmin/storage/pgadmin_example.test/pgpass;
-      chown pgadmin:root /var/lib/pgadmin/storage/pgadmin_example.test/pgpass;
-      /entrypoint.sh
-      "
 
 volumes:
+  caddy_data:
+    driver: local
   db_volume:
     driver: local
   pg_admin:
