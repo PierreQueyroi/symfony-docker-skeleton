@@ -47,7 +47,8 @@ export IP_HOST=$(cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2)
 # ----- Starting docker -----
 
 docker compose down
-docker compose up -d
+docker compose up -d --build
+#docker compose up -d
 
 # ----- Display links -----
 
@@ -71,23 +72,22 @@ echo "-----------------------------------------------------------"
 
 # ----- Extra : Check if webserver is running -----
 
-url="https://$SETUP_SITE_FRONT_URL/-admin/login"
+url="https://127.0.0.1"
 wait_time=3
-expected_status=200
 
 echo ""
 echo "${CYAN}Waiting for webserver to be ready${NC}"
 echo ""
 sleep 10
 
-while [ "$status" != "$expected_status" ]; do
+while [ "$status" != "200" ] && [ "$status" != "404" ]; do
   status=$(curl --head --location --connect-timeout 5 --insecure --write-out %{http_code} --silent --output /dev/null ${url})
   #echo "$status"
-  if [ "$status" = "$expected_status" ]; then
-    echo "${GREEN}Server is ready (status_code: $status)${NC}"
-  else
+  if [ "$status" != "200" ] && [ "$status" != "404" ]; then
     echo "${RED}Server is not ready (status_code: $status)"
     echo "Waiting for $wait_time seconds${NC}"
     sleep $wait_time
+  else
+    echo "${GREEN}Server is ready (status_code: $status)${NC}"
   fi
 done

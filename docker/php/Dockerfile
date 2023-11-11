@@ -1,11 +1,12 @@
 FROM php:8.2.6-fpm-alpine3.18 AS app_php_prod
+#FROM mlocati/php-extension-installer AS app_ext_installer
+#FROM composer:2 AS app_composer
 
 WORKDIR /var/www/
 
 # ----- Upgrade to latest ----
 
-RUN apk update; \
-	apk upgrade
+RUN apk update
 
 # ----- Adding User -----
 

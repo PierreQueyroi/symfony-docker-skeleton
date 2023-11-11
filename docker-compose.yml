@@ -77,7 +77,6 @@ services:
       PGADMIN_USER: ${PGADMIN_USER}
       PGADMIN_PWD: ${PGADMIN_PWD}
     volumes:
-      - pg_admin:/var/lib/pgadmin
       - ./docker/ssl/self_signed.crt:/certs/server.cert:ro
       - ./docker/ssl/self_signed.key:/certs/server.key:ro
     ports:
@@ -89,6 +88,4 @@ volumes:
   caddy_data:
     driver: local
   db_volume:
-    driver: local
-  pg_admin:
     driver: local
