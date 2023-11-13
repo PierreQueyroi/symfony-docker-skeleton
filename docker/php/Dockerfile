@@ -1,6 +1,4 @@
 FROM php:8.2.6-fpm-alpine3.18 AS app_php_prod
-#FROM mlocati/php-extension-installer AS app_ext_installer
-#FROM composer:2 AS app_composer
 
 WORKDIR /var/www/
 
@@ -22,26 +20,20 @@ RUN apk add --no-cache \
 		acl \
 		git
 
-#RUN apk add --no-cache \
-#		acl \
-#		fcgi \
-#		file \
-#		gettext \
-#		git \
-#		gnupg
-
 # ----- Installing PHP extensions -----
 
-COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
-
 # Using https://github.com/mlocati/docker-php-extension-installer
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 RUN install-php-extensions \
         apcu \
+    	bcmath \
+    	calendar \
         gd \
         intl \
         opcache \
         pdo_pgsql \
         pgsql \
+    	ssh2 \
         xsl \
         zip
 

@@ -4,9 +4,8 @@ name: ${COMPOSE_PROJECT_NAME:-project}
 
 services:
 
-  # PHP container
+  # PHP
   php-fpm:
-    container_name: ${COMPOSE_PROJECT_NAME:-project}-php-fpm
     build:
       context: docker/php
       target: app_php_${APP_ENV:-prod}
@@ -21,9 +20,8 @@ services:
       # Ensure that host.docker.internal is correctly defined on Linux
       - host.docker.internal:${IP_HOST:-127.0.0.1}
 
-  # Webserver container
+  # Webserver
   caddy:
-    container_name: ${COMPOSE_PROJECT_NAME:-project}-caddy
     restart: unless-stopped
     build:
       context: docker/caddy
@@ -50,7 +48,6 @@ services:
 
   # The Postgres DB Server
   db:
-    container_name: ${COMPOSE_PROJECT_NAME:-project}-db
     image: postgres:${DATABASE_VERSION}-alpine
     restart: unless-stopped
     environment:
@@ -62,7 +59,6 @@ services:
 
   # A PGAdmin container for Tooling
   pgadmin:
-    container_name: ${COMPOSE_PROJECT_NAME:-project}-pgadmin
     build:
       context: docker/pgadmin
     depends_on:
