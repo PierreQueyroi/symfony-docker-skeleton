@@ -37,10 +37,6 @@ set -a
 . ./.env
 set +a
 
-# ----- Adding PgAdmin conf -----
-
-chmod 0777 ./docker/pgadmin
-
 # Ugly stuff for Wsl Host IP
 export IP_HOST=$(cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2)
 
